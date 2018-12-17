@@ -1,0 +1,19 @@
+{
+  "name": "urlfetch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "run": "node app.js"
+  },
+  "keywords": [],
+  "author": "Clint Heyer",
+  "license": "ISC",
+  "dependencies": {
+    "argparse": "^1.0.10",
+    "chalk": "^2.4.1",
+    "execa": "^1.0.0",
+    "get-urls": "^8.0.0",
+    "quickly-count-substrings": "^1.0.0"
+  }
+}
