@@ -16,13 +16,13 @@ node app.js --input [input file] --execute [command to run for each url]
 
 ## Usage: Run a command for each url
 
-Reads input.txt, executing a command 'batch' for each URL:
+Reads `input.txt`, executing a command `batch` for each URL:
 
 ```
 node app.js --input input.txt --execute batch
 ```
 
-This means if input.txt contains URLs A, B and C, urlfetch would execute:
+This means if `input.txt` contains URLs A, B and C, urlfetch would execute:
 
 ```
 batch A
@@ -30,7 +30,7 @@ batch B
 batch C
 ```
 
-No special escaping or enclosing of URLs is performed. In this case, 'batch' is assumed to be a command available in the current working directory or global scope (eg in your path).
+No special escaping or enclosing of URLs is performed. In this case, `batch` is assumed to be a command available in the current working directory or global scope (eg in your path).
 
 Add the flag `--verbose` if you care to see the output of the execution.
 
@@ -46,19 +46,19 @@ node app.js --input input.txt --execute batch --cwd c:\somepath
 
 ## Usage: Collect URLs from input file
 
-Read input.txt, appending each found URL to output.txt. Essentially, it strips away everything from the input that is not a URL.
+Read `input.txt`, appending each found URL to `output.txt`. Essentially, it strips away everything from the input that is not a URL.
 
 ```
 node app.js --input input.txt --appendTo output.txt
 ```
 
-Each URL is appended on its own line, and the output file is created if it doesn't exist. There is no checking for duplicate URLs, so the output file might accrue duplicates.
+Each URL is appended on its own line, and the output file is created if it doesn't exist. There is no checking for duplicate URLs.
 
 ## Flags
 
---verbose: Print out info on what it's doing
+--verbose: Print out info on what it is doing, and the result of command execution.
 
---zero: Empties the contents of the input file after processing. Use with caution: This will be performed regardless of whether executions were successful.
+--zero: Empties the input file after processing. Use with caution: This will be performed regardless of whether executions were successful.
 
 Flag usage example:
 
