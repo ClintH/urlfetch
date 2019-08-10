@@ -24,17 +24,46 @@ let logVerbose = (m) => {
   parser.addArgument(['-i', '--input'], { required: true, help: 'File to parse' });
   parser.addArgument(['-v', '--verbose'], { action: 'storeTrue', help: 'Print additional status' });
   parser.addArgument(['-x', '--execute'], { help: 'Command to execute for each URL' });
+  parser.addArgument(['--include'], { help: 'Url parameters to include (others are excluded' });
   parser.addArgument(['--cwd'], { help: 'Working directory for execution' });
   parser.addArgument(['-a', '--appendTo'], { help: 'Appends each found url to this file' });
   parser.addArgument(['-z', '--zero'], { action: 'storeTrue', help: 'Empties the input files after execute/appendTo has run' });
   var args = parser.parseArgs();
 
-  let urls = new Set();
+  var urls = [];
+
   if (args.verbose) verbose = true; // important to have first
 
   // Read input
   if (args.input) urls = await handleFile(args.input);
 
+
+  // Remove params
+  if (args.include || args.exclude) {
+    let include = args.include ? args.include.split(',') : [];
+    let exclude = args.exclude ? args.exclude.split(',') : [];
+    urls = urls.map(u => {
+      let url = new URL(u);
+      let keys = Array.from(url.searchParams.keys());
+      keys.forEach((name) => {
+        // Remove params that are not in include list, if include list is specified
+        if (include.length > 0) {
+          if (include.indexOf(name) < 0) {
+            url.searchParams.delete(name);
+          }
+        }
+
+        // Remove params listed in exclude list
+        if (exclude.indexOf(name) >= 0) {
+          url.searchParams.delete(name);
+        }
+      });
+      if (verbose) {
+        console.log(u + " -> " + url.toString());
+      }
+      return url.toString();
+    });
+  }
   // Execute something per url
   if (args.execute) await executeUrls(urls, args);
 
@@ -49,7 +78,7 @@ let logVerbose = (m) => {
     log('--zero option used, emptying the input file');
     fs.writeFileSync(args.input, '');
   }
-  console.log("Done.");
+
 })();
 
 async function appendUrls(urls, dest) {
@@ -72,25 +101,28 @@ async function appendUrls(urls, dest) {
 
 async function executeUrls(urls, args) {
   if (args.cwd) logVerbose('Execution working directory: ' + args.cwd);
+  let total = urls.length;
+
   let p = new Promise((resolve, reject) => {
-    if (urls.length == 0) {
+    if (total == 0) {
       log('Execute: No URLs found.');
       resolve();
       return;
     }
+    let index = 1;
     urls.forEach(u => {
-      executeUrl(u, args);
+      executeUrl(u, args, index++, total);
 
     });
     resolve();
   });
 }
 
-async function executeUrl(url, args) {
+async function executeUrl(url, args, index, total) {
   const what = args.execute + ' ' + url;
   let execArgs = {};
   if (args.cwd) execArgs.cwd = args.cwd;
-  logVerbose("Executing: " + what);
+  logVerbose("Executing " + index + "/" + total + ": " + what);
   try {
     let results = execa.shellSync(what, execArgs);
     if (results.error) {
@@ -115,7 +147,7 @@ async function handleFile(file) {
     lineReader.on('line', function (line) {
       // Do a rough check to see if it's
       // one line of Markdown syntax: [text](url)
-      // this is necessary since getUrls otherwise inclueds the trailing )
+      // this is necessary since getUrls otherwise includes the trailing )
       if (line.charAt(0) == '[' && line.charAt(line.length - 1) == ')') {
         // Ok, starts and ends the way we expect
         if (count(line, '[') == 1 && count(line, ']') == 1 && count(line, ')') == 1 && count(line, '(') == 1) {
@@ -133,7 +165,7 @@ async function handleFile(file) {
     });
 
     lineReader.on('close', function () {
-      resolve(urls);
+      resolve(Array.from(urls));
     })
   });
   return p;
