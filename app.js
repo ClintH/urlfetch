@@ -58,6 +58,9 @@ let logVerbose = (m) => {
           url.searchParams.delete(name);
         }
       });
+
+      
+      
       if (verbose) {
         console.log(u + " -> " + url.toString());
       }
@@ -148,13 +151,23 @@ async function handleFile(file) {
       // Do a rough check to see if it's
       // one line of Markdown syntax: [text](url)
       // this is necessary since getUrls otherwise includes the trailing )
+      console.log(line);
       if (line.charAt(0) == '[' && line.charAt(line.length - 1) == ')') {
         // Ok, starts and ends the way we expect
-        if (count(line, '[') == 1 && count(line, ']') == 1 && count(line, ')') == 1 && count(line, '(') == 1) {
-          // Only strip away if it's the simple case
-          line = line.replace(')', ' ');
-          line = line.replace('(', ' ');
+
+        var textClose = line.lastIndexOf(']');
+        var urlStart = line.lastIndexOf('(');
+        if (urlStart= textClose+1) {
+          // Looks alright
+          urlStart++;
+          line = line.substring(urlStart, line.length-1);
         }
+        // if (count(line, '[') == 1 && count(line, ']') == 1 && count(line, ')') == 1 && count(line, '(') == 1) {
+        //   // Only strip away if it's the simple case
+        //   console.log(' Removing parenth');
+        //   line = line.replace(')', ' ');
+        //   line = line.replace('(', ' ');
+        // }
 
       }
       getUrls(line).forEach(u => {
